@@ -1,0 +1,36 @@
+version: '3.3'
+
+services:
+  postgres-person-app-db:
+    image: 'postgres:12.0'
+    container_name: postgres-person-app-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: app
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres-person-app-db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  postgres-person-app:
+    build: .
+    ports:
+      - "8080:8080"
+    restart: always
+    environment:
+      DB_SERVER: postgres-person-app-db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+    depends_on:
+      - postgres-person-app-db
+    networks:
+      - postgres-person-app-db
+
+networks:
+  postgres-person-app-db:
+
+volumes:
+  postgres-data:

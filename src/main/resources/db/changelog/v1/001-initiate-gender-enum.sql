@@ -1,0 +1,1 @@
+CREATE TYPE test.gender_enum AS ENUM ('M', 'F');
