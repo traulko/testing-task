@@ -12,3 +12,6 @@ spring:
   liquibase:
     enabled: true
     change-log: classpath:/db/changelog/db.changelog-master.yml
+  jackson:
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false

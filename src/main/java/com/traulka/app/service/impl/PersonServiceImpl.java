@@ -28,6 +28,11 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
+    public List<PersonDto> findAll() {
+        return mapper.toDtos(repository.findAll());
+    }
+
+    @Override
     public List<PersonDto> saveAll(List<PersonDto> dtos) {
         List<Person> persons = mapper.toEntities(dtos);
         return mapper.toDtos(repository.saveAll(persons));

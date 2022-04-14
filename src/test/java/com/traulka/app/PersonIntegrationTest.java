@@ -1,5 +1,6 @@
 package com.traulka.app;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.traulka.app.config.WebConfig;
 import com.traulka.app.controller.PersonController;
@@ -20,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.nio.file.Paths;
 import java.util.List;
 
 import static org.mockito.BDDMockito.given;
@@ -78,6 +80,16 @@ class PersonIntegrationTest {
         mockMvc.perform(get("/api/v1/person")
                         .param("gender", "F")
                         .param("sortBy", "city"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedPersonDtoList)));
+    }
+
+    @Test
+    void itShouldReturnNormalizedPersonListSuccessfully() throws Exception {
+        List<PersonDto> expectedPersonDtoList = objectMapper
+                .readValue(Paths.get("src/test/resources/normalized-sorted-by-city-person-data.json").toFile(), new TypeReference<>(){});
+        given(personFacade.prepareNormalizedPersons()).willReturn(expectedPersonDtoList);
+        mockMvc.perform(get("/api/v1/person/normalization"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedPersonDtoList)));
     }

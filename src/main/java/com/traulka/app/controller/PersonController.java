@@ -29,10 +29,14 @@ public class PersonController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PersonDto>> findAll(
+    public List<PersonDto> findAll(
             @RequestParam(required = false, defaultValue = "city") final String sortBy,
             @RequestParam(required = false) final String gender) {
-        return ResponseEntity.ok(personService.findAll(gender, sortBy));
+        return personService.findAll(gender, sortBy);
     }
 
+    @GetMapping("/normalization")
+    public List<PersonDto> findAllNormalized() {
+        return personFacade.prepareNormalizedPersons();
+    }
 }

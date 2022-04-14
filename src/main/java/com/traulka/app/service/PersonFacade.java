@@ -13,9 +13,15 @@ public class PersonFacade {
 
     private final PersonService personService;
     private final FileService<PersonDto> personDtoFileService;
+    private final NormalizationService normalizationService;
 
     public List<PersonDto> uploadPersonsFromFile(MultipartFile file) {
         List<PersonDto> data = personDtoFileService.getData(file);
         return personService.saveAll(data);
+    }
+
+    public List<PersonDto> prepareNormalizedPersons() {
+        List<PersonDto> all = personService.findAll();
+        return normalizationService.normalizePersonList(all);
     }
 }

@@ -2,6 +2,12 @@ package com.traulka.app.service.impl;
 
 import com.traulka.app.dto.PersonDto;
 import com.traulka.app.service.FileService;
+
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import com.traulka.app.util.NormalizationUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -18,6 +24,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import static java.util.Optional.ofNullable;
 
 @Service
 @Slf4j
@@ -42,51 +50,76 @@ public class PersonExcelFileService implements FileService<PersonDto> {
         try (XSSFWorkbook workbook = new XSSFWorkbook(file.getInputStream())) {
             XSSFSheet sheet = workbook.getSheetAt(FIRST_PAGE_NUMBER);
             Iterator<Row> iterator = sheet.iterator();
-            iterator.next();
-            while (iterator.hasNext()) {
-                addPersonDtoToListFromRow(personList, iterator.next());
-            }
+
+            skipHeader(iterator);
+            personList = collectPersons(iterator);
+
         } catch (IOException e) {
             log.error(String.format("File with name %s cannot be parsed", file.getName()));
         }
         return personList;
     }
 
-    private void addPersonDtoToListFromRow(List<PersonDto> personDtoList, Row row) {
-        PersonDto personDto = PersonDto.builder()
-                .setFirstName(getValue(row.getCell(FIRST_NAME_COLUMN_NUMBER)))
-                .setSurname(getValue(row.getCell(SURNAME_COLUMN_NUMBER)))
-                .setAddress1(getValue(row.getCell(ADDRESS1_COLUMN_NUMBER)))
-                .setAddress2(getValue(row.getCell(ADDRESS2_COLUMN_NUMBER)))
-                .setCity(getValue(row.getCell(CITY_COLUMN_NUMBER)))
-                .setState(getValue(row.getCell(STATE_COLUMN_NUMBER)))
-                .setPostCode(getValue(row.getCell(POST_CODE_COLUMN_NUMBER)))
-                .setCountryCode(getValue(row.getCell(COUNTRY_CODE_COLUMN_NUMBER)))
-                .setGender(getValue(row.getCell(GENDER_COLUMN_NUMBER)))
-                .setDateOfBirth(getValue(row.getCell(DATE_OF_BIRTH_COLUMN_NUMBER)))
-                .build();
-        personDtoList.add(personDto);
+    private void skipHeader(Iterator<Row> iterator) {
+        iterator.next();
+    }
+
+    private List<PersonDto> collectPersons(Iterator<Row> iterator) {
+        return Stream.iterate(iterator, Iterator::hasNext, UnaryOperator.identity())
+            .map(Iterator::next)
+            .map(this::toPersonDto)
+            .collect(Collectors.toList());
+    }
+
+    private PersonDto toPersonDto(Row row){
+        String normalizedPostCode = NormalizationUtil.normalizePostCode(getValue(row.getCell(POST_CODE_COLUMN_NUMBER)));
+        String normalizeAddress = NormalizationUtil.normalizeAddress(getValue(row.getCell(ADDRESS1_COLUMN_NUMBER)));
+        String normalizedState = NormalizationUtil.normalizeState(getValue(row.getCell(STATE_COLUMN_NUMBER)));
+        return PersonDto.builder()
+            .setFirstName(getValue(row.getCell(FIRST_NAME_COLUMN_NUMBER)))
+            .setSurname(getValue(row.getCell(SURNAME_COLUMN_NUMBER)))
+            .setAddress1(normalizeAddress)
+            .setAddress2(getValue(row.getCell(ADDRESS2_COLUMN_NUMBER)))
+            .setCity(getValue(row.getCell(CITY_COLUMN_NUMBER)))
+            .setState(normalizedState)
+            .setPostCode(normalizedPostCode)
+            .setCountryCode(getValue(row.getCell(COUNTRY_CODE_COLUMN_NUMBER)))
+            .setGender(getValue(row.getCell(GENDER_COLUMN_NUMBER)))
+            .setDateOfBirth(getValue(row.getCell(DATE_OF_BIRTH_COLUMN_NUMBER)))
+            .build();
     }
 
     private String getValue(Cell cell) {
-        String value = null;
-        if (cell != null) {
-            CellType cellType = cell.getCellType();
-            switch (cellType) {
-                case NUMERIC:
-                    DataFormatter dataFormatter = new DataFormatter();
-                    String formattedCellStr = dataFormatter.formatCellValue(cell);
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
-                    LocalDate localDate = LocalDate.parse(formattedCellStr, formatter);
-                    value = String.valueOf(localDate);
-                    break;
-                case STRING:
-                    value = cell.getStringCellValue();
-                    break;
-                default:
-                    log.error("Unexpected value: " + cellType);
+        return ofNullable(cell)
+                .map(this::parseCell)
+                .orElse(null);
+    }
+
+    private String parseCell(Cell cell) {
+
+        CellType cellType = cell.getCellType();
+        switch (cellType) {
+            case NUMERIC: {
+                return parseNumeric(cell);
             }
+            case STRING: {
+                return parseString(cell);
+            }
+            default:
+               log.error("Cannot be parsed");
         }
-        return value;
+        return null;
+    }
+
+    private String parseString(Cell cell) {
+        return cell.getStringCellValue();
+    }
+
+    private String parseNumeric(Cell cell) {
+        DataFormatter dataFormatter = new DataFormatter();
+        String formattedCellStr = dataFormatter.formatCellValue(cell);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
+        LocalDate localDate = LocalDate.parse(formattedCellStr, formatter);
+        return String.valueOf(localDate);
     }
 }

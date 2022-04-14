@@ -1,6 +1,7 @@
 package com.traulka.app.repository.specification;
 
 import com.traulka.app.entity.Person;
+import com.traulka.app.entity.Person_;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
@@ -15,7 +16,7 @@ public class PersonSpecification {
         return (root, query, criteriaBuilder) ->
                 ofNullable(searchText)
                         .filter(StringUtils::isNotBlank)
-                        .map(value -> fieldLike(criteriaBuilder, root.get("gender"), value))
+                        .map(value -> fieldLike(criteriaBuilder, root.get(Person_.GENDER), value))
                         .orElseGet(criteriaBuilder::conjunction); //to ignore this clause
     }
 

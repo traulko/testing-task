@@ -1,5 +1,8 @@
 package com.traulka.app.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.traulka.app.entity.type.GenderEnum;
 import com.traulka.app.entity.type.PostgreSQLEnumType;
 import lombok.AllArgsConstructor;
@@ -69,5 +72,7 @@ public class Person {
     private GenderEnum gender;
 
     @Column(name = "date_of_birth")
+    @JsonDeserialize(using = LocalDateDeserializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate dateOfBirth;
 }
