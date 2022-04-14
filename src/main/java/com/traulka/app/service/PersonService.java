@@ -9,7 +9,5 @@ public interface PersonService {
 
     List<PersonDto> findAll();
 
-    List<PersonDto> findAll();
-
     List<PersonDto> saveAll(List<PersonDto> dtos);
 }
