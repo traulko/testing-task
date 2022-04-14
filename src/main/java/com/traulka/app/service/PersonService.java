@@ -5,7 +5,9 @@ import com.traulka.app.dto.PersonDto;
 import java.util.List;
 
 public interface PersonService {
-    List<PersonDto> findAll(String gender, String sortBy);
+    List<PersonDto> findAll(String surname, String sortBy);
+
+    List<PersonDto> findAll();
 
     List<PersonDto> findAll();
 

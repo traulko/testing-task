@@ -76,9 +76,9 @@ class PersonIntegrationTest {
     void itShouldReturnSortedByCityPersonAndFilteredByGenderListSuccessfully() throws Exception {
         List<PersonDto> expectedPersonDtoList =
                 resourceLoader.loadResource(PersonsTestJsonData.class, "sorted-by-city-filtered-by-gender-data.json").getPersons();
-        given(personService.findAll("F", "city")).willReturn(expectedPersonDtoList);
+        given(personService.findAll("i", "city")).willReturn(expectedPersonDtoList);
         mockMvc.perform(get("/api/v1/person")
-                        .param("gender", "F")
+                        .param("surname", "i")
                         .param("sortBy", "city"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedPersonDtoList)));

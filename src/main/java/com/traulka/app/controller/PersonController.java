@@ -4,7 +4,6 @@ import com.traulka.app.dto.PersonDto;
 import com.traulka.app.service.PersonFacade;
 import com.traulka.app.service.PersonService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,8 +30,8 @@ public class PersonController {
     @GetMapping
     public List<PersonDto> findAll(
             @RequestParam(required = false, defaultValue = "city") final String sortBy,
-            @RequestParam(required = false) final String gender) {
-        return personService.findAll(gender, sortBy);
+            @RequestParam(required = false) final String surname) {
+        return personService.findAll(surname, sortBy);
     }
 
     @GetMapping("/normalization")

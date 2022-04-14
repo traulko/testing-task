@@ -12,11 +12,11 @@ import static java.util.Optional.ofNullable;
 @Component
 public class PersonSpecification {
 
-    public Specification<Person> findByGender(String searchText) {
+    public Specification<Person> findBySurname(String searchText) {
         return (root, query, criteriaBuilder) ->
                 ofNullable(searchText)
                         .filter(StringUtils::isNotBlank)
-                        .map(value -> fieldLike(criteriaBuilder, root.get(Person_.GENDER), value))
+                        .map(value -> fieldLike(criteriaBuilder, root.get(Person_.SURNAME), value))
                         .orElseGet(criteriaBuilder::conjunction); //to ignore this clause
     }
 

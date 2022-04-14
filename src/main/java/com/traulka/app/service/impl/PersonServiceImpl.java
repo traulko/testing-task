@@ -22,8 +22,8 @@ public class PersonServiceImpl implements PersonService {
     private final PersonSpecification filterSpecification;
 
     @Override
-    public List<PersonDto> findAll(String gender, String sortBy) {
-        List<Person> all = repository.findAll(buildSpecification(gender), Sort.by(sortBy));
+    public List<PersonDto> findAll(String surname, String sortBy) {
+        List<Person> all = repository.findAll(buildSpecification(surname), Sort.by(sortBy));
         return mapper.toDtos(all);
     }
 
@@ -38,7 +38,7 @@ public class PersonServiceImpl implements PersonService {
         return mapper.toDtos(repository.saveAll(persons));
     }
 
-    private Specification<Person> buildSpecification(String gender) {
-        return Specification.where(filterSpecification.findByGender(gender));
+    private Specification<Person> buildSpecification(String surname) {
+        return Specification.where(filterSpecification.findBySurname(surname));
     }
 }
